@@ -13,6 +13,11 @@ const navItems = [
       { href: "/admin/faculty-view", label: "Student Performance View", icon: "Users" },
     ]
   },
+  {
+    label: "Faculty",
+    icon: "Briefcase",
+    href: "/admin/faculty-view"
+  }
 ];
 
 export default function AdminLayout({
