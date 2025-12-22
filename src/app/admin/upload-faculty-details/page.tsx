@@ -4,9 +4,9 @@ export default function UploadFacultyDetailsPage() {
   return (
     <div className="space-y-8">
       <div className="text-center">
-        <h1 className="text-3xl font-bold tracking-tight">Upload Faculty Performance Details</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Upload Student Performance</h1>
         <p className="text-muted-foreground">
-          Enter the details for the faculty member and the subject they are teaching.
+          Enter the details for the student performance.
         </p>
       </div>
       <FacultyDetailsUploadForm />
