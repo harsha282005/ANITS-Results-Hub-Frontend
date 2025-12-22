@@ -16,7 +16,10 @@ const navItems = [
   {
     label: "Faculty",
     icon: "Briefcase",
-    href: "/admin/faculty-view"
+    items: [
+      { href: "/admin/upload-faculty-performance", label: "Upload Faculty Performance", icon: "Upload" },
+      { href: "/admin/faculty-performance-view", label: "Faculty Performance View", icon: "Users" },
+    ]
   }
 ];
 
