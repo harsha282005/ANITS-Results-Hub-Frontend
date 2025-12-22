@@ -16,6 +16,11 @@ import {
   SidebarFooter,
   SidebarTrigger,
   SidebarInset,
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarGroupLabel,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -31,9 +36,10 @@ import { useEffect, useState } from "react";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 
 interface NavItem {
-  href: string;
+  href?: string;
   label: string;
   icon: keyof typeof Icons;
+  items?: NavItem[];
 }
 
 interface DashboardLayoutProps {
@@ -132,16 +138,44 @@ export function DashboardLayout({
         </SidebarHeader>
         <SidebarContent>
           <SidebarMenu>
-            {navItems.map((item) => {
-               const Icon = Icons[item.icon] as LucideIcon;
-               return (
+             {navItems.map((item) => {
+              const Icon = Icons[item.icon] as LucideIcon;
+              const isActive = item.href ? pathname.startsWith(item.href) : (item.items?.some(sub => pathname.startsWith(sub.href!)) || false);
+
+              if (item.items) {
+                return (
+                  <SidebarGroup key={item.label}>
+                    <SidebarGroupLabel className="group-data-[collapsible=icon]:justify-center">
+                      <Icon className="mr-2" />
+                      <span className="group-data-[collapsible=icon]:hidden">{item.label}</span>
+                    </SidebarGroupLabel>
+                    <SidebarGroupContent>
+                      <SidebarMenuSub>
+                        {item.items.map((subItem) => {
+                          const SubIcon = Icons[subItem.icon] as LucideIcon;
+                          return (
+                            <SidebarMenuSubButton key={subItem.href} asChild isActive={pathname.startsWith(subItem.href!)}>
+                              <Link href={subItem.href!}>
+                                <SubIcon />
+                                <span>{subItem.label}</span>
+                              </Link>
+                            </SidebarMenuSubButton>
+                          );
+                        })}
+                      </SidebarMenuSub>
+                    </SidebarGroupContent>
+                  </SidebarGroup>
+                );
+              }
+
+              return (
                 <SidebarMenuItem key={item.href}>
                   <SidebarMenuButton
                     asChild
-                    isActive={pathname.startsWith(item.href)}
+                    isActive={isActive}
                     tooltip={{ children: item.label, side: "right", align: "center" }}
                   >
-                    <Link href={item.href}>
+                    <Link href={item.href!}>
                       <Icon />
                       <span>{item.label}</span>
                     </Link>
@@ -171,5 +205,3 @@ export function DashboardLayout({
     </SidebarProvider>
   );
 }
-
-    
