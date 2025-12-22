@@ -137,7 +137,7 @@ export function NewFacultyPerformanceUploadForm() {
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select a batch" />
-                        </Trigger>
+                        </SelectTrigger>
                       </FormControl>
                       <SelectContent>
                         <SelectItem value="--">--</SelectItem>
@@ -160,7 +160,7 @@ export function NewFacultyPerformanceUploadForm() {
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select a semester" />
-                        </Trigger>
+                        </SelectTrigger>
                       </FormControl>
                       <SelectContent>
                          <SelectItem value="--">--</SelectItem>
