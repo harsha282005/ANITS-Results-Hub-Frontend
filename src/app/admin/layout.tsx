@@ -5,8 +5,14 @@ const navItems = [
   { href: "/admin/dashboard", label: "Home", icon: "Home" },
   { href: "/admin/upload-results", label: "Upload Results", icon: "Upload" },
   { href: "/admin/upload-student-details", label: "Upload Student Details", icon: "UserPlus" },
-  { href: "/admin/upload-faculty-details", label: "Upload Student Performance", icon: "UserCog" },
-  { href: "/admin/faculty-view", label: "Student Performance View", icon: "Users" },
+  { 
+    label: "Student", 
+    icon: "GraduationCap",
+    items: [
+      { href: "/admin/upload-faculty-details", label: "Upload Student Performance", icon: "Upload" },
+      { href: "/admin/faculty-view", label: "Student Performance View", icon: "Users" },
+    ]
+  },
 ];
 
 export default function AdminLayout({
