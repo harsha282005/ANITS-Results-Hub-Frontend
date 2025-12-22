@@ -6,7 +6,7 @@ const navItems = [
   { href: "/admin/upload-results", label: "Upload Results", icon: "Upload" },
   { href: "/admin/upload-student-details", label: "Upload Student Details", icon: "UserPlus" },
   { href: "/admin/upload-faculty-details", label: "Upload Student Performance", icon: "UserCog" },
-  { href: "/admin/faculty-view", label: "Faculty Performance View", icon: "Users" },
+  { href: "/admin/faculty-view", label: "Student Performance View", icon: "Users" },
 ];
 
 export default function AdminLayout({

@@ -160,7 +160,7 @@ export default function FacultyDashboardPage() {
       <div className="text-center space-y-2">
         <h1 className="text-3xl font-bold tracking-tight">Welcome, {facultyName}!</h1>
         <p className="text-muted-foreground">
-          View subject performance by applying filters.
+          View student subject performance by applying filters.
         </p>
       </div>
 
@@ -260,7 +260,7 @@ export default function FacultyDashboardPage() {
                 <p>
                   {hasFilters && performanceData === null
                     ? "Data not available for the selected criteria."
-                    : "Please select batch, semester, and department to view faculty performance data."
+                    : "Please select batch, semester, and department to view student performance data."
                   }
                 </p>
             </CardContent>

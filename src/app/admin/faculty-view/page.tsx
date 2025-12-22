@@ -150,9 +150,9 @@ export default function AdminFacultyViewPage() {
   return (
     <div className="space-y-8">
       <div className="text-center">
-        <h1 className="text-3xl font-bold tracking-tight">Faculty Performance</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Student Performance View</h1>
         <p className="text-muted-foreground">
-          View subject performance by applying filters.
+          View student subject performance by applying filters.
         </p>
       </div>
       <div className="flex justify-center items-center gap-6 flex-wrap">
@@ -251,7 +251,7 @@ export default function AdminFacultyViewPage() {
                 <p>
                   {hasFilters && performanceData === null 
                     ? "Data not available for the selected criteria."
-                    : "Please select all filters to view faculty performance data."
+                    : "Please select all filters to view student performance data."
                   }
                 </p>
             </CardContent>
