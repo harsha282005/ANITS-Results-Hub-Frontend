@@ -67,7 +67,7 @@ const staffRegisterSchema = baseRegisterSchema.extend({
     const expectedEnding = `${data.department.toLowerCase()}@anits.edu.in`;
     return data.email.toLowerCase().endsWith(expectedEnding);
 }, {
-    message: "Email must end with <department>@anits.edu.in",
+    message: "Invalid email for the selected department.",
     path: ["email"],
 });
 
