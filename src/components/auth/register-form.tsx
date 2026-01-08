@@ -263,7 +263,7 @@ export function RegisterForm() {
                   <FormControl>
                     <Input
                       type="email"
-                      placeholder={role === 'student' ? "name@anits.edu.in" : "name@example.com"}
+                      placeholder="Enter your email"
                       {...field}
                     />
                   </FormControl>

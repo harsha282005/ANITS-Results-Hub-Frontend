@@ -247,7 +247,7 @@ export function LoginForm() {
                     <FormControl>
                       <Input
                         type="email"
-                        placeholder="name@anits.edu.in"
+                        placeholder="Enter your email"
                         {...field}
                       />
                     </FormControl>
@@ -308,7 +308,7 @@ export function LoginForm() {
                     <FormControl>
                       <Input
                         type="email"
-                        placeholder="name@anits.edu.in"
+                        placeholder="Enter your email"
                         {...field}
                       />
                     </FormControl>
@@ -346,7 +346,7 @@ export function LoginForm() {
                     <FormControl>
                       <Input
                         type="email"
-                        placeholder="name@anits.edu.in"
+                        placeholder="Enter your email"
                         {...field}
                       />
                     </FormControl>
