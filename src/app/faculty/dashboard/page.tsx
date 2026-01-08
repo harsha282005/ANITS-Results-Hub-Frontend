@@ -53,7 +53,8 @@ const processDataForVerticalTable = (data: any[] | null, selectedSection: string
   const allKeys = new Set<string>();
   filteredBySection.forEach(sectionData => {
     Object.keys(sectionData).forEach(key => {
-      if (key !== 'section') {
+      // Exclude 'section' and 'email' keys from being displayed as metrics
+      if (key.toLowerCase() !== 'section' && key.toLowerCase() !== 'email') {
         allKeys.add(key);
       }
     });
@@ -105,11 +106,15 @@ const processDataForVerticalTable = (data: any[] | null, selectedSection: string
            displayValue = `${failCount}`;
        }
 
-       metrics[formattedName][sectionName] = displayValue;
+       if (metrics[formattedName]) {
+          metrics[formattedName][sectionName] = displayValue;
+       }
     });
 
     otherMetrics.forEach(metricKey => {
-       metrics[metricKey][sectionName] = sectionData[metricKey] ?? '--';
+      if (metrics[metricKey]) {
+        metrics[metricKey][sectionName] = sectionData[metricKey] ?? '--';
+      }
     });
   });
 
@@ -153,8 +158,9 @@ export default function FacultyDashboardPage() {
         try {
           const data = await getSpecificStudentPerformance(selectedBatch, selectedDepartment, selectedSemester, facultyEmail);
           setPerformanceData(data);
+          setSelectedSection("All");
         } catch (err: any) {
-            if (err?.isAxiosError && err.response?.status === 500) {
+            if (axios.isAxiosError(err) && err.response?.status === 500) {
                 setPerformanceData(null);
                 setError(null); // Explicitly clear any previous error
             } else {
@@ -273,11 +279,11 @@ export default function FacultyDashboardPage() {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {rows.map((row, index) => (
+                    {rows.map((row) => (
                     <TableRow
                         key={row.metric}
                         className={cn(
-                        (index >= rows.length - 2) &&
+                        (row.metric.toLowerCase().includes('pass percentage') || row.metric.toLowerCase().includes('total students')) &&
                             "font-bold bg-yellow-200 dark:bg-yellow-800/30 hover:bg-yellow-300 dark:hover:bg-yellow-800/40"
                         )}
                     >
@@ -307,3 +313,4 @@ export default function FacultyDashboardPage() {
     </div>
   );
 }
+
