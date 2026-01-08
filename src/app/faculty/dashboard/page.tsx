@@ -32,17 +32,26 @@ import { cn } from "@/lib/utils";
 const academicYears = ["--", "A21", "A22", "A23", "A24", "A25"];
 const semesters = ["--", "1-1", "1-2", "2-1", "2-2", "3-1", "3-2", "4-1", "4-2"];
 const departments = ["--", "CSE", "IT", "ECE", "EEE", "MECH", "CIVIL", "CSM"];
+const allSections = ["A", "B", "C", "D"];
 
-const processDataForVerticalTable = (data: any[] | null) => {
+const processDataForVerticalTable = (data: any[] | null, selectedSection: string) => {
   if (!data || data.length === 0) {
     return { headers: [], rows: [] };
   }
 
-  const uniqueSections = [...new Set(data.map(d => d.section).filter(Boolean))];
+  const filteredBySection = selectedSection === 'All'
+    ? data
+    : data.filter(d => d.section && d.section.endsWith(selectedSection));
+
+  if (filteredBySection.length === 0) {
+      return { headers: [], rows: [] };
+  }
+
+  const uniqueSections = [...new Set(filteredBySection.map(d => d.section).filter(Boolean))];
   const metrics: { [key: string]: { [section: string]: string } } = {};
 
   const allKeys = new Set<string>();
-  data.forEach(sectionData => {
+  filteredBySection.forEach(sectionData => {
     Object.keys(sectionData).forEach(key => {
       if (key !== 'section') {
         allKeys.add(key);
@@ -54,7 +63,6 @@ const processDataForVerticalTable = (data: any[] | null) => {
 
   const subjectMetrics: string[] = [];
   const otherMetrics: string[] = [];
-
   const processedSubjects = new Set<string>();
 
   sortedKeys.forEach(key => {
@@ -77,7 +85,7 @@ const processDataForVerticalTable = (data: any[] | null) => {
     metrics[metricName] = {};
   });
 
-  data.forEach(sectionData => {
+  filteredBySection.forEach(sectionData => {
     const sectionName = sectionData.section;
     if (!sectionName) return;
     
@@ -118,6 +126,7 @@ export default function FacultyDashboardPage() {
   const [selectedBatch, setSelectedBatch] = useState("--");
   const [selectedSemester, setSelectedSemester] = useState("--");
   const [selectedDepartment, setSelectedDepartment] = useState("--");
+  const [selectedSection, setSelectedSection] = useState("All");
   const [performanceData, setPerformanceData] = useState<any[] | null | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -151,9 +160,15 @@ export default function FacultyDashboardPage() {
     fetchPerformanceData();
   }, [selectedBatch, selectedSemester, selectedDepartment]);
 
-  const { headers, rows } = useMemo(() => processDataForVerticalTable(performanceData), [performanceData]);
+  const { headers, rows } = useMemo(() => processDataForVerticalTable(performanceData, selectedSection), [performanceData, selectedSection]);
   
   const hasFilters = selectedBatch !== '--' && selectedSemester !== '--' && selectedDepartment !== '--';
+
+  const availableSections = useMemo(() => {
+    if (!performanceData) return ["All"];
+    const sections = new Set(performanceData.map(d => d.section ? d.section.slice(-1) : '').filter(Boolean));
+    return ["All", ...Array.from(sections).sort()];
+  }, [performanceData]);
 
   return (
     <div className="space-y-8 animate-slide-in-from-bottom">
@@ -204,6 +219,19 @@ export default function FacultyDashboardPage() {
                   </SelectContent>
               </Select>
           </div>
+          <div className="grid gap-2">
+              <Label htmlFor="section-select">Section</Label>
+              <Select value={selectedSection} onValueChange={setSelectedSection} disabled={!performanceData}>
+                  <SelectTrigger id="section-select" className="w-[180px]">
+                      <SelectValue placeholder="Select Section" />
+                  </SelectTrigger>
+                  <SelectContent>
+                      {availableSections.map(sec => (
+                          <SelectItem key={sec} value={sec}>{sec}</SelectItem>
+                      ))}
+                  </SelectContent>
+              </Select>
+          </div>
       </div>
 
        {isLoading ? (
@@ -218,7 +246,7 @@ export default function FacultyDashboardPage() {
                 <p className="text-sm text-muted-foreground">{error}</p>
             </CardContent>
         </Card>
-      ) : performanceData && performanceData.length > 0 ? (
+      ) : performanceData && rows.length > 0 ? (
         <Card>
           <CardHeader>
             <CardTitle>Detailed Section Data</CardTitle>
@@ -258,7 +286,7 @@ export default function FacultyDashboardPage() {
         <Card>
             <CardContent className="p-10 text-center text-muted-foreground">
                 <p>
-                  {hasFilters && performanceData === null
+                  {hasFilters && (performanceData === null || rows.length === 0)
                     ? "Data not available for the selected criteria."
                     : "Please select batch, semester, and department to view student performance data."
                   }
