@@ -156,6 +156,7 @@ export default function FacultyDashboardPage() {
         } catch (err: any) {
             if (err?.isAxiosError && err.response?.status === 500) {
                 setPerformanceData(null);
+                setError(null); // Explicitly clear any previous error
             } else {
                 setError(err.message || "Failed to fetch performance data.");
             }
