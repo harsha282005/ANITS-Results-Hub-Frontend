@@ -50,10 +50,13 @@ export default function StudentPerformanceViewPage() {
         setPerformanceData(undefined);
         try {
           const data = await getFacultyPerformance(selectedBatch, selectedSemester, selectedDepartment);
-          setPerformanceData(data);
+          // The API returns a list of lists, so we flatten it.
+          const flattenedData = data && data.length > 0 ? data.flat() : [];
+          setPerformanceData(flattenedData);
           setSelectedSection("All");
         } catch (err: any) {
           setError(err.message || "Failed to fetch performance data.");
+          setPerformanceData(null);
         } finally {
           setIsLoading(false);
         }
@@ -77,6 +80,16 @@ export default function StudentPerformanceViewPage() {
   }, [performanceData, selectedSection]);
 
   const hasFilters = selectedBatch !== '--' && selectedSemester !== '--' && selectedDepartment !== '--';
+
+  const allKeys = useMemo(() => {
+    if (!filteredData || filteredData.length === 0) return [];
+    const keys = new Set<string>();
+    filteredData.forEach(item => {
+      Object.keys(item).forEach(key => keys.add(key));
+    });
+    return Array.from(keys).sort();
+  }, [filteredData]);
+
 
   return (
     <div className="space-y-8">
@@ -164,23 +177,17 @@ export default function StudentPerformanceViewPage() {
                 <Table>
                   <TableHeader>
                       <TableRow>
-                          <TableHead>Section</TableHead>
-                          <TableHead>Subject Name</TableHead>
-                          <TableHead>Faculty Name</TableHead>
-                          <TableHead>Total Students</TableHead>
-                          <TableHead>Passed Students</TableHead>
-                          <TableHead>Pass Percentage</TableHead>
+                          {allKeys.map(key => (
+                              <TableHead key={key}>{key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</TableHead>
+                          ))}
                       </TableRow>
                   </TableHeader>
                   <TableBody>
                       {filteredData.map((row, index) => (
                       <TableRow key={index}>
-                          <TableCell>{row.section}</TableCell>
-                          <TableCell>{row.subject_name}</TableCell>
-                          <TableCell>{row.faculty_name}</TableCell>
-                          <TableCell>{row.total_students}</TableCell>
-                          <TableCell>{row.passed_students}</TableCell>
-                          <TableCell>{row.pass_percentage}</TableCell>
+                          {allKeys.map(key => (
+                               <TableCell key={key}>{row[key]}</TableCell>
+                          ))}
                       </TableRow>
                       ))}
                   </TableBody>
