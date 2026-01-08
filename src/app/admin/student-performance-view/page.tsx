@@ -25,7 +25,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Label } from "@/components/ui/label";
-import { getStudentPerformanceForFacultyView } from "@/services/api";
+import { getFacultyPerformance } from "@/services/api";
 import { AlertTriangle, Loader2 } from "lucide-react";
 
 const academicYears = ["--", "A21", "A22", "A23", "A24", "A25"];
@@ -49,7 +49,7 @@ export default function StudentPerformanceViewPage() {
         setError(null);
         setPerformanceData(undefined);
         try {
-          const data = await getStudentPerformanceForFacultyView(selectedBatch, selectedSemester, selectedDepartment);
+          const data = await getFacultyPerformance(selectedBatch, selectedSemester, selectedDepartment);
           setPerformanceData(data);
           setSelectedSection("All");
         } catch (err: any) {
