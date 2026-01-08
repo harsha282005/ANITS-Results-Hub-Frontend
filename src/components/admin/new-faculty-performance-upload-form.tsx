@@ -32,6 +32,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, UploadCloud, File as FileIcon, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { uploadNewFacultyPerformanceFile } from "@/services/api";
 
 const departments = ["CSE", "IT", "ECE", "EEE", "MECH", "CIVIL", "CSM"];
 const academicYears = ["A21", "A22", "A23", "A24", "A25"];
@@ -71,13 +72,33 @@ export function NewFacultyPerformanceUploadForm() {
 
   const onSubmit = async (values: FormValues) => {
     setIsLoading(true);
-    toast({
-        title: "In Progress",
-        description: "API connection not yet implemented.",
-    });
-    // NOTE: No API call is made here as per user instruction.
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setIsLoading(false);
+    try {
+        const file = values.facultyPerformanceFile[0];
+        await uploadNewFacultyPerformanceFile(file, values.batch, values.branch, values.semester);
+
+        toast({
+            title: "Upload Successful!",
+            description: `Faculty performance details for ${values.batch} ${values.branch} (${values.semester}) have been uploaded.`,
+        });
+        
+        form.reset({
+            batch: '--',
+            branch: '--',
+            semester: '--',
+            facultyPerformanceFile: undefined
+        });
+        if (fileInputRef.current) {
+            fileInputRef.current.value = "";
+        }
+    } catch (error: any) {
+        toast({
+            title: "Upload Failed",
+            description: error.message || "An unexpected error occurred during the file upload.",
+            variant: "destructive",
+        });
+    } finally {
+        setIsLoading(false);
+    }
   };
   
   const handleFileAreaClick = () => {
