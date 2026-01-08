@@ -44,8 +44,7 @@ const processDataForVerticalTable = (data: any[] | null) => {
   }
 
   const uniqueSections = [...new Set(flattenedData.map(d => d.section).filter(Boolean))].sort();
-  const metrics: { [key: string]: { [section: string]: string } } = {};
-
+  
   const allKeys = new Set<string>();
   flattenedData.forEach(sectionData => {
     Object.keys(sectionData).forEach(key => {
@@ -57,72 +56,18 @@ const processDataForVerticalTable = (data: any[] | null) => {
 
   const sortedKeys = Array.from(allKeys).sort();
 
-  const subjectMetrics: string[] = [];
-  const otherMetrics: string[] = [];
-
-  const processedSubjects = new Set<string>();
-
-  sortedKeys.forEach(key => {
-    const lowerKey = key.toLowerCase();
-    if (lowerKey.endsWith('_pass') || lowerKey.endsWith('_fail')) {
-      const subjectName = key.replace(/_pass|_fail/i, '');
-      if (!processedSubjects.has(subjectName.toLowerCase())) {
-        subjectMetrics.push(subjectName);
-        processedSubjects.add(subjectName.toLowerCase());
-      }
-    } else {
-      otherMetrics.push(key);
-    }
-  });
-  
-  const formattedSubjectNames = subjectMetrics.map(s => s.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '));
-  const finalMetricOrder = [...formattedSubjectNames.sort(), ...otherMetrics.sort()];
-  
-  finalMetricOrder.forEach(metricName => {
-    metrics[metricName] = {};
-  });
-
-  flattenedData.forEach(sectionData => {
-    const sectionName = sectionData.section;
-    if (!sectionName) return;
-
-    processedSubjects.forEach(subjectKey => {
-       const passKey = Object.keys(sectionData).find(k => k.toLowerCase() === `${subjectKey.toLowerCase()}_pass`);
-       const failKey = Object.keys(sectionData).find(k => k.toLowerCase() === `${subjectKey.toLowerCase()}_fail`);
-       const passCount = passKey ? sectionData[passKey] : null;
-       const failCount = failKey ? sectionData[failKey] : null;
-       const formattedName = subjectKey.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-       
-       let displayValue = '--';
-       if (passCount !== null && failCount !== null) {
-           displayValue = `${passCount} / ${failCount}`;
-       } else if (passCount !== null) {
-           displayValue = `${passCount}`;
-       } else if (failCount !== null) {
-           displayValue = `${failCount}`;
-       }
-
-       if (metrics[formattedName]) {
-        metrics[formattedName][sectionName] = displayValue;
-       }
+  const rows = sortedKeys.map(metricKey => {
+    const row: { [key: string]: any } = { metric: metricKey };
+    uniqueSections.forEach(section => {
+      const sectionData = flattenedData.find(d => d.section === section);
+      row[section] = sectionData?.[metricKey] ?? '--';
     });
-
-    otherMetrics.forEach(metricKey => {
-       const formattedMetricKey = metricKey.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-       if (metrics[formattedMetricKey]) {
-        metrics[formattedMetricKey][sectionName] = sectionData[metricKey] ?? '--';
-       }
-    });
+    return row;
   });
 
   return {
     headers: ["Metric", ...uniqueSections],
-    rows: finalMetricOrder.map(metric => {
-      const formattedMetric = metric.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
-      return {
-      metric: formattedMetric,
-      ...metrics[formattedMetric]
-    }}).filter(row => row.metric)
+    rows: rows
   };
 };
 
@@ -143,7 +88,7 @@ export default function StudentPerformanceViewPage() {
         try {
           const data = await getFacultyPerformance(selectedBatch, selectedSemester, selectedDepartment);
           setPerformanceData(data);
-        } catch (err: any) {
+        } catch (err: any) => {
           setError(err.message || "Failed to fetch performance data.");
           setPerformanceData(null);
         } finally {
@@ -226,7 +171,7 @@ export default function StudentPerformanceViewPage() {
         <Card>
           <CardHeader>
             <CardTitle>Detailed Section Data</CardTitle>
-            <CardDescription>A breakdown of performance metrics for each section. Pass/Fail counts are displayed for subjects.</CardDescription>
+            <CardDescription>A breakdown of performance metrics for each section.</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
