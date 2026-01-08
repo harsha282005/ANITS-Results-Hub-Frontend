@@ -1,4 +1,4 @@
-import { NewFacultyPerformanceUploadForm } from "@/components/admin/new-faculty-performance-upload-form";
+import { StudentPerformanceUploadForm } from "@/components/admin/student-performance-upload-form";
 
 export default function UploadStudentPerformancePage() {
   return (
@@ -9,7 +9,7 @@ export default function UploadStudentPerformancePage() {
           Enter the details for the student performance.
         </p>
       </div>
-      <NewFacultyPerformanceUploadForm />
+      <StudentPerformanceUploadForm />
     </div>
   );
 }
