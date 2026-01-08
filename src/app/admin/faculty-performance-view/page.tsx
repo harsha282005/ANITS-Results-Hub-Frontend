@@ -27,58 +27,17 @@ import {
 import { Label } from "@/components/ui/label";
 import { getStudentPerformanceForFacultyView } from "@/services/api";
 import { AlertTriangle, Loader2 } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 const academicYears = ["--", "A21", "A22", "A23", "A24", "A25"];
 const semesters = ["--", "1-1", "1-2", "2-1", "2-2", "3-1", "3-2", "4-1", "4-2"];
 const departments = ["--", "CSE", "IT", "ECE", "EEE", "MECH", "CIVIL", "CSM"];
 
-const processDataForVerticalTable = (data: any[] | null) => {
-  if (!data || data.length === 0) {
-    return { headers: [], rows: [] };
-  }
-
-  const uniqueSections = [...new Set(data.map(d => d.section).filter(Boolean))].sort();
-  const metrics: { [key: string]: { [section: string]: string } } = {};
-
-  const allKeys = new Set<string>();
-  data.forEach(sectionData => {
-    Object.keys(sectionData).forEach(key => {
-      if (key !== 'section') {
-        allKeys.add(key);
-      }
-    });
-  });
-
-  const sortedKeys = Array.from(allKeys).sort();
-  const finalMetricOrder = sortedKeys;
-  
-  finalMetricOrder.forEach(metricName => {
-    metrics[metricName] = {};
-  });
-
-  data.forEach(sectionData => {
-    const sectionName = sectionData.section;
-    if (!sectionName) return;
-
-    finalMetricOrder.forEach(metricKey => {
-       metrics[metricKey][sectionName] = sectionData[metricKey] ?? '--';
-    });
-  });
-
-  return {
-    headers: ["Metric", ...uniqueSections],
-    rows: finalMetricOrder.map(metric => ({
-      metric,
-      ...metrics[metric]
-    }))
-  };
-};
 
 export default function FacultyPerformanceViewPage() {
   const [selectedBatch, setSelectedBatch] = useState("--");
   const [selectedSemester, setSelectedSemester] = useState("--");
   const [selectedDepartment, setSelectedDepartment] = useState("--");
+  const [selectedSection, setSelectedSection] = useState("All");
   const [performanceData, setPerformanceData] = useState<any[] | null | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -92,6 +51,7 @@ export default function FacultyPerformanceViewPage() {
         try {
           const data = await getStudentPerformanceForFacultyView(selectedBatch, selectedSemester, selectedDepartment);
           setPerformanceData(data);
+          setSelectedSection("All");
         } catch (err: any) {
           setError(err.message || "Failed to fetch performance data.");
         } finally {
@@ -104,8 +64,18 @@ export default function FacultyPerformanceViewPage() {
     fetchPerformanceData();
   }, [selectedBatch, selectedSemester, selectedDepartment]);
 
-  const { headers, rows } = useMemo(() => processDataForVerticalTable(performanceData), [performanceData]);
-  
+  const availableSections = useMemo(() => {
+    if (!performanceData) return ["All"];
+    const sections = new Set(performanceData.map(item => item.section));
+    return ["All", ...Array.from(sections).sort()];
+  }, [performanceData]);
+
+  const filteredData = useMemo(() => {
+    if (!performanceData) return [];
+    if (selectedSection === "All") return performanceData;
+    return performanceData.filter(item => item.section === selectedSection);
+  }, [performanceData, selectedSection]);
+
   const hasFilters = selectedBatch !== '--' && selectedSemester !== '--' && selectedDepartment !== '--';
 
   return (
@@ -156,6 +126,19 @@ export default function FacultyPerformanceViewPage() {
                   </SelectContent>
               </Select>
           </div>
+          <div className="grid gap-2">
+              <Label htmlFor="section-select">Section</Label>
+              <Select value={selectedSection} onValueChange={setSelectedSection} disabled={!performanceData}>
+                  <SelectTrigger id="section-select" className="w-[180px]">
+                      <SelectValue placeholder="Select Section" />
+                  </SelectTrigger>
+                  <SelectContent>
+                      {availableSections.map(sec => (
+                          <SelectItem key={sec} value={sec}>{sec}</SelectItem>
+                      ))}
+                  </SelectContent>
+              </Select>
+          </div>
       </div>
       
        {isLoading ? (
@@ -173,26 +156,31 @@ export default function FacultyPerformanceViewPage() {
       ) : performanceData && performanceData.length > 0 ? (
         <Card>
           <CardHeader>
-            <CardTitle>Detailed Section Data</CardTitle>
-            <CardDescription>A breakdown of performance metrics for each section.</CardDescription>
+            <CardTitle>Faculty Performance Data</CardTitle>
+            <CardDescription>A detailed breakdown of performance for each subject and faculty member.</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                       <TableRow>
-                      {headers.map(header => (
-                          <TableHead key={header}>{header}</TableHead>
-                      ))}
+                          <TableHead>Section</TableHead>
+                          <TableHead>Subject Name</TableHead>
+                          <TableHead>Faculty Name</TableHead>
+                          <TableHead>Total Students</TableHead>
+                          <TableHead>Passed Students</TableHead>
+                          <TableHead>Pass Percentage</TableHead>
                       </TableRow>
                   </TableHeader>
                   <TableBody>
-                      {rows.map((row, index) => (
-                      <TableRow key={row.metric}>
-                          <TableCell className="font-medium">{row.metric}</TableCell>
-                          {headers.slice(1).map(sectionName => (
-                              <TableCell key={sectionName}>{row[sectionName] ?? '--'}</TableCell>
-                          ))}
+                      {filteredData.map((row, index) => (
+                      <TableRow key={index}>
+                          <TableCell>{row.section}</TableCell>
+                          <TableCell>{row.subject_name}</TableCell>
+                          <TableCell>{row.faculty_name}</TableCell>
+                          <TableCell>{row.total_students}</TableCell>
+                          <TableCell>{row.passed_students}</TableCell>
+                          <TableCell>{row.pass_percentage}</TableCell>
                       </TableRow>
                       ))}
                   </TableBody>
