@@ -29,7 +29,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { DEPARTMENTS } from "@/lib/constants";
-import { signupStudent } from "@/services/api";
+import { signupStudent, signupFaculty } from "@/services/api";
 
 type Role = "student" | "faculty";
 
@@ -110,9 +110,9 @@ export function RegisterForm() {
   const onSubmit = async (values: z.infer<typeof studentRegisterSchema | typeof staffRegisterSchema>) => {
     setIsLoading(true);
 
-    if (role === 'student') {
-        const studentValues = values as z.infer<typeof studentRegisterSchema>;
-        try {
+    try {
+        if (role === 'student') {
+            const studentValues = values as z.infer<typeof studentRegisterSchema>;
             const response = await signupStudent({
                 email: studentValues.email,
                 roll: studentValues.rollNo,
@@ -126,32 +126,30 @@ export function RegisterForm() {
             localStorage.setItem("studentEmail", studentValues.email);
             localStorage.setItem("studentDepartment", studentValues.department);
 
-            toast({
-                title: "Registration Successful",
-                description: "Your account has been created. Redirecting to login...",
+        } else {
+            const facultyValues = values as z.infer<typeof staffRegisterSchema>;
+            await signupFaculty({
+                email: facultyValues.email,
+                username: facultyValues.username,
+                password: facultyValues.password,
+                department: facultyValues.department,
             });
-
-            router.push("/login");
-
-        } catch (error: any) {
-            toast({
-                title: "Registration Failed",
-                description: error.message || "An unexpected error occurred.",
-                variant: "destructive",
-            });
-        } finally {
-            setIsLoading(false);
         }
-    } else {
-        // Simulate API call for faculty
-        await new Promise((resolve) => setTimeout(resolve, 1500));
-
+        
         toast({
-        title: "Registration Successful",
-        description: "Your account has been created. Please log in.",
+            title: "Registration Successful",
+            description: "Your account has been created. Redirecting to login...",
         });
 
         router.push("/login");
+
+    } catch (error: any) {
+        toast({
+            title: "Registration Failed",
+            description: error.message || "An unexpected error occurred.",
+            variant: "destructive",
+        });
+    } finally {
         setIsLoading(false);
     }
   };
@@ -318,5 +316,3 @@ export function RegisterForm() {
     </div>
   );
 }
-
-    

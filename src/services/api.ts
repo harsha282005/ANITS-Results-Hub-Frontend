@@ -315,6 +315,23 @@ export const signupStudent = async (data: { email: string; roll: string; passwor
     }
 };
 
+export const signupFaculty = async (data: { username: string, email: string; password: string; department: string; }) => {
+    try {
+        const response = await apiClient.post(`/api/signup/faculty`, data);
+        if (response.data.success) {
+            return response.data;
+        } else {
+            throw new Error(response.data.message || 'Faculty registration failed.');
+        }
+    } catch (error: any) {
+        if (axios.isAxiosError(error) && error.response) {
+            throw new Error(error.response.data.message || `An error occurred. Status: ${error.response.status}`);
+        }
+        throw new Error(error.message || 'An unknown error occurred during registration.');
+    }
+};
+
+
 export const loginStudent = async (data: { roll: string; email: string; password: string; department: string; }) => {
     try {
         const response = await apiClient.post(`/api/login/student`, data);
@@ -369,6 +386,7 @@ export const loginAdmin = async (data: { username: string; email: string; passwo
     
 
     
+
 
 
 
