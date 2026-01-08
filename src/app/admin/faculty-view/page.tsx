@@ -54,12 +54,15 @@ const processDataForVerticalTable = (data: any[] | null) => {
 
   const subjectMetrics: string[] = [];
   const otherMetrics: string[] = [];
+  const highlightedMetrics: string[] = [];
 
   const processedSubjects = new Set<string>();
 
   sortedKeys.forEach(key => {
     const lowerKey = key.toLowerCase();
-    if (lowerKey.endsWith('_pass') || lowerKey.endsWith('_fail')) {
+     if (lowerKey === 'total students' || lowerKey === 'pass percentage') {
+      highlightedMetrics.push(key);
+    } else if (lowerKey.endsWith('_pass') || lowerKey.endsWith('_fail')) {
       const subjectName = key.replace(/_pass|_fail/i, '');
       if (!processedSubjects.has(subjectName.toLowerCase())) {
         subjectMetrics.push(subjectName);
@@ -71,7 +74,12 @@ const processDataForVerticalTable = (data: any[] | null) => {
   });
   
   const formattedSubjectNames = subjectMetrics.map(s => s.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '));
-  const finalMetricOrder = [...formattedSubjectNames.sort(), ...otherMetrics.sort()];
+  
+  // Custom sort for other metrics to ensure "Total Students" and "Pass Percentage" are handled by highlightedMetrics
+  const regularMetrics = otherMetrics.filter(m => !highlightedMetrics.find(h => h.toLowerCase() === m.toLowerCase())).sort();
+
+  // Final order of metrics
+  const finalMetricOrder = [...formattedSubjectNames.sort(), ...regularMetrics, ...highlightedMetrics.sort()];
   
   finalMetricOrder.forEach(metricName => {
     metrics[metricName] = {};
@@ -97,11 +105,15 @@ const processDataForVerticalTable = (data: any[] | null) => {
            displayValue = `${failCount}`;
        }
 
-       metrics[formattedName][sectionName] = displayValue;
+       if (metrics[formattedName]) {
+         metrics[formattedName][sectionName] = displayValue;
+       }
     });
 
-    otherMetrics.forEach(metricKey => {
-       metrics[metricKey][sectionName] = sectionData[metricKey] ?? '--';
+    [...regularMetrics, ...highlightedMetrics].forEach(metricKey => {
+       if (metrics[metricKey]) {
+         metrics[metricKey][sectionName] = sectionData[metricKey] ?? '--';
+       }
     });
   });
 
@@ -226,11 +238,11 @@ export default function AdminFacultyViewPage() {
                       </TableRow>
                   </TableHeader>
                   <TableBody>
-                      {rows.map((row, index) => (
+                      {rows.map((row) => (
                       <TableRow
                           key={row.metric}
                            className={cn(
-                            (index >= rows.length - 2) &&
+                            (row.metric.toLowerCase() === 'total students' || row.metric.toLowerCase() === 'pass percentage') &&
                                 "font-bold bg-yellow-200 dark:bg-yellow-800/30 hover:bg-yellow-300 dark:hover:bg-yellow-800/40"
                             )}
                       >
