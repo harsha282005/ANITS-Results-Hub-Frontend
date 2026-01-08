@@ -27,17 +27,102 @@ import {
 import { Label } from "@/components/ui/label";
 import { getFacultyPerformance } from "@/services/api";
 import { AlertTriangle, Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const academicYears = ["--", "A21", "A22", "A23", "A24", "A25"];
 const semesters = ["--", "1-1", "1-2", "2-1", "2-2", "3-1", "3-2", "4-1", "4-2"];
 const departments = ["--", "CSE", "IT", "ECE", "EEE", "MECH", "CIVIL", "CSM"];
 
+const processDataForVerticalTable = (data: any[] | null) => {
+  if (!data || data.length === 0) {
+    return { headers: [], rows: [] };
+  }
+
+  const flattenedData = data.flat();
+  if (flattenedData.length === 0) {
+      return { headers: [], rows: [] };
+  }
+
+  const uniqueSections = [...new Set(flattenedData.map(d => d.section).filter(Boolean))].sort();
+  const metrics: { [key: string]: { [section: string]: string } } = {};
+
+  const allKeys = new Set<string>();
+  flattenedData.forEach(sectionData => {
+    Object.keys(sectionData).forEach(key => {
+      if (key !== 'section') {
+        allKeys.add(key);
+      }
+    });
+  });
+
+  const sortedKeys = Array.from(allKeys).sort();
+
+  const subjectMetrics: string[] = [];
+  const otherMetrics: string[] = [];
+
+  const processedSubjects = new Set<string>();
+
+  sortedKeys.forEach(key => {
+    const lowerKey = key.toLowerCase();
+    if (lowerKey.endsWith('_pass') || lowerKey.endsWith('_fail')) {
+      const subjectName = key.replace(/_pass|_fail/i, '');
+      if (!processedSubjects.has(subjectName.toLowerCase())) {
+        subjectMetrics.push(subjectName);
+        processedSubjects.add(subjectName.toLowerCase());
+      }
+    } else {
+      otherMetrics.push(key);
+    }
+  });
+  
+  const formattedSubjectNames = subjectMetrics.map(s => s.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '));
+  const finalMetricOrder = [...formattedSubjectNames.sort(), ...otherMetrics.sort()];
+  
+  finalMetricOrder.forEach(metricName => {
+    metrics[metricName] = {};
+  });
+
+  flattenedData.forEach(sectionData => {
+    const sectionName = sectionData.section;
+    if (!sectionName) return;
+
+    processedSubjects.forEach(subjectKey => {
+       const passKey = Object.keys(sectionData).find(k => k.toLowerCase() === `${subjectKey.toLowerCase()}_pass`);
+       const failKey = Object.keys(sectionData).find(k => k.toLowerCase() === `${subjectKey.toLowerCase()}_fail`);
+       const passCount = passKey ? sectionData[passKey] : null;
+       const failCount = failKey ? sectionData[failKey] : null;
+       const formattedName = subjectKey.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+       
+       let displayValue = '--';
+       if (passCount !== null && failCount !== null) {
+           displayValue = `${passCount} / ${failCount}`;
+       } else if (passCount !== null) {
+           displayValue = `${passCount}`;
+       } else if (failCount !== null) {
+           displayValue = `${failCount}`;
+       }
+
+       metrics[formattedName][sectionName] = displayValue;
+    });
+
+    otherMetrics.forEach(metricKey => {
+       metrics[metricKey][sectionName] = sectionData[metricKey] ?? '--';
+    });
+  });
+
+  return {
+    headers: ["Metric", ...uniqueSections],
+    rows: finalMetricOrder.map(metric => ({
+      metric: metric.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
+      ...metrics[metric]
+    }))
+  };
+};
 
 export default function StudentPerformanceViewPage() {
   const [selectedBatch, setSelectedBatch] = useState("--");
   const [selectedSemester, setSelectedSemester] = useState("--");
   const [selectedDepartment, setSelectedDepartment] = useState("--");
-  const [selectedSection, setSelectedSection] = useState("All");
   const [performanceData, setPerformanceData] = useState<any[] | null | undefined>(undefined);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -50,10 +135,7 @@ export default function StudentPerformanceViewPage() {
         setPerformanceData(undefined);
         try {
           const data = await getFacultyPerformance(selectedBatch, selectedSemester, selectedDepartment);
-          // The API returns a list of lists, so we flatten it.
-          const flattenedData = data && data.length > 0 ? data.flat() : [];
-          setPerformanceData(flattenedData);
-          setSelectedSection("All");
+          setPerformanceData(data);
         } catch (err: any) {
           setError(err.message || "Failed to fetch performance data.");
           setPerformanceData(null);
@@ -67,36 +149,16 @@ export default function StudentPerformanceViewPage() {
     fetchPerformanceData();
   }, [selectedBatch, selectedSemester, selectedDepartment]);
 
-  const availableSections = useMemo(() => {
-    if (!performanceData) return ["All"];
-    const sections = new Set(performanceData.map(item => item.section));
-    return ["All", ...Array.from(sections).sort()];
-  }, [performanceData]);
-
-  const filteredData = useMemo(() => {
-    if (!performanceData) return [];
-    if (selectedSection === "All") return performanceData;
-    return performanceData.filter(item => item.section === selectedSection);
-  }, [performanceData, selectedSection]);
-
+  const { headers, rows } = useMemo(() => processDataForVerticalTable(performanceData), [performanceData]);
+  
   const hasFilters = selectedBatch !== '--' && selectedSemester !== '--' && selectedDepartment !== '--';
-
-  const allKeys = useMemo(() => {
-    if (!filteredData || filteredData.length === 0) return [];
-    const keys = new Set<string>();
-    filteredData.forEach(item => {
-      Object.keys(item).forEach(key => keys.add(key));
-    });
-    return Array.from(keys).sort();
-  }, [filteredData]);
-
 
   return (
     <div className="space-y-8">
       <div className="text-center">
         <h1 className="text-3xl font-bold tracking-tight">Student Performance View</h1>
         <p className="text-muted-foreground">
-          View student performance by applying filters.
+          View student subject performance by applying filters.
         </p>
       </div>
       <div className="flex justify-center items-center gap-6 flex-wrap">
@@ -139,21 +201,8 @@ export default function StudentPerformanceViewPage() {
                   </SelectContent>
               </Select>
           </div>
-          <div className="grid gap-2">
-              <Label htmlFor="section-select">Section</Label>
-              <Select value={selectedSection} onValueChange={setSelectedSection} disabled={!performanceData}>
-                  <SelectTrigger id="section-select" className="w-[180px]">
-                      <SelectValue placeholder="Select Section" />
-                  </SelectTrigger>
-                  <SelectContent>
-                      {availableSections.map(sec => (
-                          <SelectItem key={sec} value={sec}>{sec}</SelectItem>
-                      ))}
-                  </SelectContent>
-              </Select>
-          </div>
       </div>
-      
+
        {isLoading ? (
         <div className="flex justify-center items-center h-40">
             <Loader2 className="h-10 w-10 animate-spin text-primary" />
@@ -166,27 +215,34 @@ export default function StudentPerformanceViewPage() {
                 <p className="text-sm text-muted-foreground">{error}</p>
             </CardContent>
         </Card>
-      ) : performanceData && performanceData.length > 0 ? (
+      ) : performanceData && rows.length > 0 ? (
         <Card>
           <CardHeader>
-            <CardTitle>Student Performance Data</CardTitle>
-            <CardDescription>A detailed breakdown of performance for each subject and faculty member.</CardDescription>
+            <CardTitle>Detailed Section Data</CardTitle>
+            <CardDescription>A breakdown of performance metrics for each section. Pass/Fail counts are displayed for subjects.</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
                       <TableRow>
-                          {allKeys.map(key => (
-                              <TableHead key={key}>{key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</TableHead>
-                          ))}
+                      {headers.map(header => (
+                          <TableHead key={header}>{header}</TableHead>
+                      ))}
                       </TableRow>
                   </TableHeader>
                   <TableBody>
-                      {filteredData.map((row, index) => (
-                      <TableRow key={index}>
-                          {allKeys.map(key => (
-                               <TableCell key={key}>{row[key]}</TableCell>
+                      {rows.map((row, index) => (
+                      <TableRow
+                          key={row.metric}
+                           className={cn(
+                            (row.metric.toLowerCase().includes('pass percentage') || row.metric.toLowerCase().includes('total students')) &&
+                                "font-bold bg-yellow-200 dark:bg-yellow-800/30 hover:bg-yellow-300 dark:hover:bg-yellow-800/40"
+                            )}
+                      >
+                          <TableCell className="font-medium">{row.metric}</TableCell>
+                          {headers.slice(1).map(sectionName => (
+                              <TableCell key={sectionName}>{row[sectionName] ?? '--'}</TableCell>
                           ))}
                       </TableRow>
                       ))}
@@ -210,3 +266,5 @@ export default function StudentPerformanceViewPage() {
     </div>
   );
 }
+
+    
