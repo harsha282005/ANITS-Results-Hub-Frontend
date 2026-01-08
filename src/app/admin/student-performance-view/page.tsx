@@ -102,20 +102,27 @@ const processDataForVerticalTable = (data: any[] | null) => {
            displayValue = `${failCount}`;
        }
 
-       metrics[formattedName][sectionName] = displayValue;
+       if (metrics[formattedName]) {
+        metrics[formattedName][sectionName] = displayValue;
+       }
     });
 
     otherMetrics.forEach(metricKey => {
-       metrics[metricKey][sectionName] = sectionData[metricKey] ?? '--';
+       const formattedMetricKey = metricKey.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+       if (metrics[formattedMetricKey]) {
+        metrics[formattedMetricKey][sectionName] = sectionData[metricKey] ?? '--';
+       }
     });
   });
 
   return {
     headers: ["Metric", ...uniqueSections],
-    rows: finalMetricOrder.map(metric => ({
-      metric: metric.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
-      ...metrics[metric]
-    }))
+    rows: finalMetricOrder.map(metric => {
+      const formattedMetric = metric.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+      return {
+      metric: formattedMetric,
+      ...metrics[formattedMetric]
+    }}).filter(row => row.metric)
   };
 };
 
@@ -234,7 +241,7 @@ export default function StudentPerformanceViewPage() {
                   <TableBody>
                       {rows.map((row, index) => (
                       <TableRow
-                          key={row.metric}
+                          key={`${row.metric}-${index}`}
                            className={cn(
                             (row.metric.toLowerCase().includes('pass percentage') || row.metric.toLowerCase().includes('total students')) &&
                                 "font-bold bg-yellow-200 dark:bg-yellow-800/30 hover:bg-yellow-300 dark:hover:bg-yellow-800/40"
@@ -266,5 +273,3 @@ export default function StudentPerformanceViewPage() {
     </div>
   );
 }
-
-    
