@@ -88,7 +88,7 @@ export default function StudentPerformanceViewPage() {
         try {
           const data = await getFacultyPerformance(selectedBatch, selectedSemester, selectedDepartment);
           setPerformanceData(data);
-        } catch (err: any) => {
+        } catch (err: any) {
           setError(err.message || "Failed to fetch performance data.");
           setPerformanceData(null);
         } finally {
