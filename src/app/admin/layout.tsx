@@ -10,8 +10,8 @@ const navItems = [
     label: "Student", 
     icon: "GraduationCap",
     items: [
-      { href: "/admin/upload-faculty-performance", label: "Upload Student Performance", icon: "Upload" },
-      { href: "/admin/faculty-view", label: "Student Performance View", icon: "Users" },
+      { href: "/admin/upload-student-performance", label: "Upload Student Performance", icon: "Upload" },
+      { href: "/admin/student-performance-view", label: "Student Performance View", icon: "Users" },
     ]
   },
   {
