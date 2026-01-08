@@ -78,7 +78,7 @@ export function NewFacultyPerformanceUploadForm() {
 
         toast({
             title: "Upload Successful!",
-            description: `Student performance details for ${values.batch} ${values.branch} (${values.semester}) have been uploaded.`,
+            description: `Faculty performance details for ${values.batch} ${values.branch} (${values.semester}) have been uploaded.`,
         });
         
         form.reset({
@@ -116,9 +116,9 @@ export function NewFacultyPerformanceUploadForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Student Performance Details Upload</CardTitle>
+        <CardTitle>Faculty Performance Details Upload</CardTitle>
         <CardDescription>
-          Select the branch, batch, semester, and the student performance file (.xlsx).
+          Select the branch, batch, semester, and the faculty performance file (.xlsx).
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -201,7 +201,7 @@ export function NewFacultyPerformanceUploadForm() {
               name="facultyPerformanceFile"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Student Performance File</FormLabel>
+                  <FormLabel>Faculty Performance File</FormLabel>
                    <div 
                     className={cn(
                       "relative flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-lg cursor-pointer bg-secondary/50 hover:bg-secondary/80 transition-colors",
@@ -262,3 +262,5 @@ export function NewFacultyPerformanceUploadForm() {
     </Card>
   );
 }
+
+    
