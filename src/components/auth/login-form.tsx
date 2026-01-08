@@ -44,13 +44,6 @@ const facultyLoginSchema = z.object({
   email: z.string().email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
   department: z.string().refine(val => val !== '--', { message: "Please select a department." }),
-}).refine(data => {
-    if (data.department === '--' || !data.email) return true;
-    const expectedEnding = `${data.department.toLowerCase()}@anits.edu.in`;
-    return data.email.toLowerCase().endsWith(expectedEnding);
-}, {
-    message: "Invalid email for the selected department.",
-    path: ["email"],
 });
 
 const adminLoginSchema = z.object({
@@ -394,5 +387,4 @@ export function LoginForm() {
     </div>
   );
 }
-
     
