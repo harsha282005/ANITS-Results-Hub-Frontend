@@ -32,7 +32,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, UploadCloud, File as FileIcon, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { uploadNewFacultyPerformanceFile } from "@/services/api";
+import { uploadFacultyPerformanceFile } from "@/services/api";
 
 const departments = ["CSE", "IT", "ECE", "EEE", "MECH", "CIVIL", "CSM"];
 const academicYears = ["A21", "A22", "A23", "A24", "A25"];
@@ -42,7 +42,7 @@ const fileUploadSchema = z.object({
   branch: z.string().refine(val => val !== '--', { message: "Please select a branch." }),
   batch: z.string().refine(val => val !== '--', { message: "Please select a batch." }),
   semester: z.string().refine(val => val !== '--', { message: "Please select a semester." }),
-  facultyPerformanceFile: z
+  studentPerformanceFile: z
     .any()
     .refine((files) => files?.[0], "File is required.")
     .refine(
@@ -64,17 +64,17 @@ export function StudentPerformanceUploadForm() {
       branch: '--',
       batch: '--',
       semester: '--',
-      facultyPerformanceFile: undefined
+      studentPerformanceFile: undefined
     }
   });
 
-  const selectedFile = form.watch("facultyPerformanceFile")?.[0];
+  const selectedFile = form.watch("studentPerformanceFile")?.[0];
 
   const onSubmit = async (values: FormValues) => {
     setIsLoading(true);
     try {
-        const file = values.facultyPerformanceFile[0];
-        await uploadNewFacultyPerformanceFile(file, values.batch, values.branch, values.semester);
+        const file = values.studentPerformanceFile[0];
+        await uploadFacultyPerformanceFile(file, values.batch, values.branch, values.semester);
 
         toast({
             title: "Upload Successful!",
@@ -85,7 +85,7 @@ export function StudentPerformanceUploadForm() {
             batch: '--',
             branch: '--',
             semester: '--',
-            facultyPerformanceFile: undefined
+            studentPerformanceFile: undefined
         });
         if (fileInputRef.current) {
             fileInputRef.current.value = "";
@@ -107,7 +107,7 @@ export function StudentPerformanceUploadForm() {
 
   const handleRemoveFile = (e: React.MouseEvent) => {
     e.stopPropagation();
-    form.resetField("facultyPerformanceFile");
+    form.resetField("studentPerformanceFile");
     if (fileInputRef.current) {
         fileInputRef.current.value = "";
     }
@@ -198,14 +198,14 @@ export function StudentPerformanceUploadForm() {
             
             <FormField
               control={form.control}
-              name="facultyPerformanceFile"
+              name="studentPerformanceFile"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Student Performance File</FormLabel>
                    <div 
                     className={cn(
                       "relative flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-lg cursor-pointer bg-secondary/50 hover:bg-secondary/80 transition-colors",
-                      form.getFieldState('facultyPerformanceFile').error && "border-destructive"
+                      form.getFieldState('studentPerformanceFile').error && "border-destructive"
                     )}
                     onClick={handleFileAreaClick}
                   >
