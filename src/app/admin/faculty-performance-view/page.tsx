@@ -38,7 +38,7 @@ const processDataForVerticalTable = (data: any[] | null) => {
     return { headers: [], rows: [] };
   }
 
-  const uniqueSections = [...new Set(data.map(d => d.section).filter(Boolean))];
+  const uniqueSections = [...new Set(data.map(d => d.section).filter(Boolean))].sort();
   const metrics: { [key: string]: { [section: string]: string } } = {};
 
   const allKeys = new Set<string>();
@@ -51,7 +51,6 @@ const processDataForVerticalTable = (data: any[] | null) => {
   });
 
   const sortedKeys = Array.from(allKeys).sort();
-
   const finalMetricOrder = sortedKeys;
   
   finalMetricOrder.forEach(metricName => {
@@ -205,7 +204,7 @@ export default function FacultyPerformanceViewPage() {
         <Card>
             <CardContent className="p-10 text-center text-muted-foreground">
                 <p>
-                  {hasFilters && performanceData === null 
+                  {hasFilters && (performanceData === null || performanceData?.length === 0)
                     ? "Data not available for the selected criteria."
                     : "Please select all filters to view faculty performance data."
                   }
