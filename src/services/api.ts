@@ -174,6 +174,32 @@ export const uploadStudentDetailsFile = async (file: File, batch: string, branch
     }
 };
 
+export const uploadFacultyDetailsFile = async (file: File, branch: string): Promise<any> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('branch', branch);
+
+    try {
+        const response = await apiClient.post(`/api/admin/upload-faculty-details`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+
+        if (response.status === 200) {
+            return response.data;
+        } else {
+            throw new Error(response.data.message || `File upload failed. Status: ${response.status}`);
+        }
+    } catch (error: any) {
+        if (axios.isAxiosError(error) && error.response) {
+            throw new Error(error.response.data.message || `An error occurred during the file upload. Status: ${error.response.status}`);
+        }
+        throw new Error(error.message || 'An unknown error occurred during file upload.');
+    }
+};
+
+
 export const uploadFacultyPerformanceFile = async (file: File, batch: string, branch: string, semester: string): Promise<any> => {
     const formData = new FormData();
     formData.append('file', file);
@@ -343,6 +369,7 @@ export const loginAdmin = async (data: { username: string; email: string; passwo
     
 
     
+
 
 
 

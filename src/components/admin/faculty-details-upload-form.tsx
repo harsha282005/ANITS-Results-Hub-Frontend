@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useRef } from "react";
@@ -32,6 +33,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, UploadCloud, File as FileIcon, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { uploadFacultyDetailsFile } from "@/services/api";
 
 const departments = ["CSE", "IT", "ECE", "EEE", "MECH", "CIVIL", "CSM"];
 
@@ -65,24 +67,31 @@ export function FacultyDetailsUploadForm() {
 
   const onSubmit = async (values: FormValues) => {
     setIsLoading(true);
-    // TODO: Implement actual API call
-    console.log("Form submitted with values:", values);
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    toast({
-      title: "File Submitted (Placeholder)",
-      description: "API connection not yet implemented. Details logged to console.",
-    });
+    try {
+      const file = values.facultyDetailsFile[0];
+      await uploadFacultyDetailsFile(file, values.department);
 
-    form.reset({
+      toast({
+        title: "Upload Successful!",
+        description: `Faculty details for ${values.department} have been uploaded.`,
+      });
+      
+      form.reset({
         department: '--',
         facultyDetailsFile: undefined,
-    });
-    if (fileInputRef.current) {
+      });
+      if (fileInputRef.current) {
         fileInputRef.current.value = "";
+      }
+    } catch (error: any) {
+       toast({
+        title: "Upload Failed",
+        description: error.message || "An unexpected error occurred.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
     }
-    
-    setIsLoading(false);
   };
 
   const handleFileAreaClick = () => {
