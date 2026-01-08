@@ -251,6 +251,28 @@ export const getFacultyPerformance = async (batch: string, semester: string, bra
     }
 }
 
+export const getStudentPerformanceForFacultyView = async (batch: string, semester: string, branch: string): Promise<any> => {
+    try {
+        const params = new URLSearchParams();
+        params.append('batch', batch);
+        params.append('semester', semester);
+        params.append('branch', branch);
+
+        const response = await apiClient.get(`/api/admin/get/student-performance`, { params });
+        
+        if (response.status === 200) {
+            return response.data;
+        } else {
+            throw new Error(response.data.message || `Failed to fetch student performance. Status: ${response.status}`);
+        }
+    } catch (error: any) {
+        if (axios.isAxiosError(error) && error.response) {
+            throw new Error(error.response.data.message || `An error occurred during the API request. Status: ${error.response.status}`);
+        }
+        throw new Error(error.message || 'An unknown error occurred.');
+    }
+}
+
 export const signupStudent = async (data: { email: string; roll: string; password: string; department: string; }) => {
     try {
         const response = await apiClient.post(`/api/signup/student`, data);
@@ -321,5 +343,6 @@ export const loginAdmin = async (data: { username: string; email: string; passwo
     
 
     
+
 
 
