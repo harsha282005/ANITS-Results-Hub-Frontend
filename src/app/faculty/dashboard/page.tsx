@@ -154,7 +154,11 @@ export default function FacultyDashboardPage() {
           const data = await getSpecificStudentPerformance(selectedBatch, selectedDepartment, selectedSemester, facultyEmail);
           setPerformanceData(data);
         } catch (err: any) {
-          setError(err.message || "Failed to fetch performance data.");
+            if (err?.isAxiosError && err.response?.status === 500) {
+                setPerformanceData(null);
+            } else {
+                setError(err.message || "Failed to fetch performance data.");
+            }
         } finally {
           setIsLoading(false);
         }
@@ -292,7 +296,7 @@ export default function FacultyDashboardPage() {
             <CardContent className="p-10 text-center text-muted-foreground">
                 <p>
                   {hasFilters && (performanceData === null || rows.length === 0)
-                    ? "Data not available for the selected criteria."
+                    ? "Data Not Found"
                     : "Please select batch, semester, and department to view student performance data."
                   }
                 </p>
@@ -302,5 +306,3 @@ export default function FacultyDashboardPage() {
     </div>
   );
 }
-
-    
