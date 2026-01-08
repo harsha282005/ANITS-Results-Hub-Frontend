@@ -25,7 +25,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { getFacultyPerformance } from "@/services/api";
+import { getSpecificStudentPerformance } from "@/services/api";
 import { AlertTriangle, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -131,22 +131,27 @@ export default function FacultyDashboardPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [facultyName, setFacultyName] = useState("Faculty");
+  const [facultyEmail, setFacultyEmail] = useState<string | null>(null);
 
   useEffect(() => {
     const storedUsername = localStorage.getItem("facultyUsername");
+    const storedEmail = localStorage.getItem("facultyEmail");
     if (storedUsername) {
       setFacultyName(storedUsername);
+    }
+    if (storedEmail) {
+        setFacultyEmail(storedEmail);
     }
   }, []);
 
   useEffect(() => {
     const fetchPerformanceData = async () => {
-      if (selectedBatch !== '--' && selectedSemester !== '--' && selectedDepartment !== '--') {
+      if (selectedBatch !== '--' && selectedSemester !== '--' && selectedDepartment !== '--' && facultyEmail) {
         setIsLoading(true);
         setError(null);
         setPerformanceData(undefined);
         try {
-          const data = await getFacultyPerformance(selectedBatch, selectedSemester, selectedDepartment);
+          const data = await getSpecificStudentPerformance(selectedBatch, selectedDepartment, selectedSemester, facultyEmail);
           setPerformanceData(data);
         } catch (err: any) {
           setError(err.message || "Failed to fetch performance data.");
@@ -158,7 +163,7 @@ export default function FacultyDashboardPage() {
       }
     };
     fetchPerformanceData();
-  }, [selectedBatch, selectedSemester, selectedDepartment]);
+  }, [selectedBatch, selectedSemester, selectedDepartment, facultyEmail]);
 
   const { headers, rows } = useMemo(() => processDataForVerticalTable(performanceData, selectedSection), [performanceData, selectedSection]);
   
@@ -297,3 +302,5 @@ export default function FacultyDashboardPage() {
     </div>
   );
 }
+
+    
