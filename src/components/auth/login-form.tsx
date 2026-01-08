@@ -44,6 +44,13 @@ const facultyLoginSchema = z.object({
   email: z.string().email("Invalid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
   department: z.string().refine(val => val !== '--', { message: "Please select a department." }),
+}).refine(data => {
+    if (data.department === '--' || !data.email) return true;
+    const expectedEnding = `${data.department.toLowerCase()}@anits.edu.in`;
+    return data.email.toLowerCase().endsWith(expectedEnding);
+}, {
+    message: "Email must end with <department>@anits.edu.in",
+    path: ["email"],
 });
 
 const adminLoginSchema = z.object({
@@ -86,9 +93,7 @@ export function LoginForm() {
     },
   });
 
-  const handleRoleChange = (value: string) => {
-    const newRole = value as Role;
-    setRole(newRole);
+  useEffect(() => {
     form.reset({
       rollNo: "",
       username: "",
@@ -96,6 +101,13 @@ export function LoginForm() {
       password: "",
       department: "--",
     });
+    form.trigger();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [role]);
+
+  const handleRoleChange = (value: string) => {
+    const newRole = value as Role;
+    setRole(newRole);
   };
 
   const onSubmit = async (values: any) => {
@@ -382,7 +394,5 @@ export function LoginForm() {
     </div>
   );
 }
-
-    
 
     

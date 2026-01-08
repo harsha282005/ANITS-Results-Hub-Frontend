@@ -62,6 +62,13 @@ const staffRegisterSchema = baseRegisterSchema.extend({
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords do not match",
   path: ["confirmPassword"],
+}).refine(data => {
+    if (data.department === '--' || !data.email) return true;
+    const expectedEnding = `${data.department.toLowerCase()}@anits.edu.in`;
+    return data.email.toLowerCase().endsWith(expectedEnding);
+}, {
+    message: "Email must end with <department>@anits.edu.in",
+    path: ["email"],
 });
 
 
