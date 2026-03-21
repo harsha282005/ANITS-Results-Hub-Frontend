@@ -28,11 +28,11 @@ import { Label } from "@/components/ui/label";
 import { getSpecificStudentPerformance } from "@/services/api";
 import { AlertTriangle, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import axios from "axios";
 
 const academicYears = ["--", "A21", "A22", "A23", "A24", "A25"];
 const semesters = ["--", "1-1", "1-2", "2-1", "2-2", "3-1", "3-2", "4-1", "4-2"];
 const departments = ["--", "CSE", "IT", "ECE", "EEE", "MECH", "CIVIL", "CSM"];
-const allSections = ["A", "B", "C", "D"];
 
 const processDataForVerticalTable = (data: any[] | null, selectedSection: string) => {
   if (!data || data.length === 0) {
@@ -162,7 +162,7 @@ export default function FacultyDashboardPage() {
         } catch (err: any) {
             if (axios.isAxiosError(err) && err.response?.status === 500) {
                 setPerformanceData(null);
-                setError(null); // Explicitly clear any previous error
+                setError(null); 
             } else {
                 setError(err.message || "Failed to fetch performance data.");
             }
@@ -182,6 +182,7 @@ export default function FacultyDashboardPage() {
 
   const availableSections = useMemo(() => {
     if (!performanceData) return ["All"];
+    // Extract last character of section and filter out empty strings
     const sections = new Set(performanceData.map(d => d.section ? d.section.slice(-1) : '').filter(Boolean));
     return ["All", ...Array.from(sections).sort()];
   }, [performanceData]);
@@ -313,4 +314,3 @@ export default function FacultyDashboardPage() {
     </div>
   );
 }
-

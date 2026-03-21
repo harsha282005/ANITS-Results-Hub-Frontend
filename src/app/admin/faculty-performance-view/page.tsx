@@ -66,7 +66,8 @@ export default function FacultyPerformanceViewPage() {
 
   const availableSections = useMemo(() => {
     if (!performanceData) return ["All"];
-    const sections = new Set(performanceData.map(item => item.section));
+    // Filter out null/undefined/empty sections to prevent SelectItem errors
+    const sections = new Set(performanceData.map(item => item.section).filter(Boolean));
     return ["All", ...Array.from(sections).sort()];
   }, [performanceData]);
 
