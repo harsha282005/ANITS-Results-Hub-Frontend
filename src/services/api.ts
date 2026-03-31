@@ -153,7 +153,7 @@ export const uploadSupplementaryResultsFile = async (file: File, batch: string, 
     formData.append('branch', branch);
 
     try {
-        const response = await apiClient.post(`/api/admin/upload/supplementary`, formData, {
+        const response = await apiClient.post(`/api/admin/upload-supply`, formData, {
             headers: {
                 'Content-Type': 'multipart/form-data',
             },
