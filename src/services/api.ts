@@ -1,5 +1,3 @@
-
-
 import axios from 'axios';
 
 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
@@ -144,6 +142,33 @@ export const uploadResultsFile = async (file: File, batch: string, semester: str
             throw new Error(error.response.data.message || `An error occurred during the file upload. Status: ${error.response.status}`);
         }
         throw new Error(error.message || 'An unknown error occurred during file upload.');
+    }
+};
+
+export const uploadSupplementaryResultsFile = async (file: File, batch: string, semester: string, branch: string): Promise<any> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('batch', batch);
+    formData.append('semester', semester);
+    formData.append('branch', branch);
+
+    try {
+        const response = await apiClient.post(`/api/admin/upload/supplementary`, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data',
+            },
+        });
+
+        if (response.status === 200) {
+            return response.data;
+        } else {
+            throw new Error(response.data.message || `Supplementary file upload failed. Status: ${response.status}`);
+        }
+    } catch (error: any) {
+        if (axios.isAxiosError(error) && error.response) {
+            throw new Error(error.response.data.message || `An error occurred during the supplementary upload. Status: ${error.response.status}`);
+        }
+        throw new Error(error.message || 'An unknown error occurred during supplementary file upload.');
     }
 };
 
@@ -398,19 +423,3 @@ export const loginAdmin = async (data: { username: string; email: string; passwo
         throw new Error(error.message || 'An unknown error occurred during login.');
     }
 };
-
-    
-
-
-    
-
-    
-
-
-
-
-
-
-
-
-    

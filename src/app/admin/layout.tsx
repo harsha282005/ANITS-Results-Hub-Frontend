@@ -1,9 +1,9 @@
-
 import { DashboardLayout } from "@/components/layout/dashboard-layout";
 
 const navItems = [
   { href: "/admin/dashboard", label: "Home", icon: "Home" },
   { href: "/admin/upload-results", label: "Upload Results", icon: "Upload" },
+  { href: "/admin/upload-supplementary-results", label: "Upload Supplementary", icon: "FileText" },
   { href: "/admin/upload-student-details", label: "Upload Student Details", icon: "UserPlus" },
   { href: "/admin/upload-faculty-details", label: "Upload Faculty Details", icon: "UserPlus" },
   { 
